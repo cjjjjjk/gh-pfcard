@@ -1,28 +1,13 @@
-import http from 'http';
-import { generateSvg } from './svgGenerator';
-import url from 'url';
+import { cardHandler } from './handlers/cardHandler'
 
-const server = http.createServer((req, res) => {
-    const parsedUrl = url.parse(req.url || '', true);
-    const path = parsedUrl.pathname;
+export default {
+    async fetch(request: Request): Promise<Response> {
+        const url = new URL(request.url)
 
-    if (path === '/card.svg') {
-        const username = parsedUrl.query.username?.toString() || 'Guest';
+        if (url.pathname === '/card') {
+            return cardHandler(url)
+        }
 
-        const svg = generateSvg(username);
-        res.writeHead(200, {
-            'Content-Type': 'image/svg+xml',
-            'Cache-Control': 'no-cache'
-        });
-        res.end(svg);
-    } else {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('404 Not Found');
+        return new Response('404 Not Found', { status: 404 })
     }
-});
-
-const PORT = 3000;
-
-server.listen(PORT, () => {
-    console.log(`SVG server running at http://localhost:${PORT}/card.svg`);
-});
+}

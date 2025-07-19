@@ -1,1 +1,5 @@
 node_modules
+
+#.env woker deploy cloudflare
+wrangler.toml
+.dev.vars
