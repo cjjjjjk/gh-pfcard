@@ -1,3 +1,5 @@
+import { METADATA } from "../metadata";
+
 export function generateSvg(username: string, followerList: { login: string, avatar_url: string }[]): string {
   const displayedFollowers = followerList.slice(0, 8);
   const avatarSize = 60;
@@ -16,7 +18,7 @@ export function generateSvg(username: string, followerList: { login: string, ava
           y="${y}" 
           width="${avatarSize}" 
           height="${avatarSize}"
-          xlink:href="${follower.avatar_url}"
+          xlink:href="${`${METADATA.APP_URL}/proxy?url=${encodeURIComponent(follower.avatar_url)}`}"
           clip-path="url(#clip-${index})"
         />
         <defs>
