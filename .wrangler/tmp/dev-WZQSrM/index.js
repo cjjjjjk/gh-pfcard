@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-no6TwW/checked-fetch.js
+// .wrangler/tmp/bundle-DBUc6b/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -27,38 +27,111 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
   }
 });
 
+// src/utils/getToken.ts
+function getToken(env) {
+  return env.GITHUB_PAT || "get-token-false";
+}
+__name(getToken, "getToken");
+
+// src/services/ghAPI.ts
+var gitHubAPI = "https://api.github.com/users/";
+var getGitHUbFlower = /* @__PURE__ */ __name(async function(username, env) {
+  try {
+    const token = getToken(env);
+    const response = await fetch(`${gitHubAPI}${username}/followers`, {
+      method: "GET",
+      headers: {
+        "Authorization": `token ${token}`,
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "Cloudflare-Worker-GitHub-Proxy"
+      }
+    });
+    const data = await response.json();
+    const followerList = data.map((follower) => {
+      return {
+        login: follower.login,
+        avatar_url: follower.avatar_url
+      };
+    });
+    return {
+      isSucces: true,
+      followerList
+    };
+  } catch (err) {
+    return {
+      isSucceed: false,
+      followerList: [],
+      errorMessage: err.message
+    };
+  }
+}, "getGitHUbFlower");
+
 // src/services/svgService.ts
-function generateSvg(username) {
+function generateSvg(username, followerList) {
+  const displayedFollowers = followerList.slice(0, 8);
+  const avatarSize = 60;
+  const spacing = 20;
+  const startX = 20;
+  const startY = 40;
+  const followerItems = displayedFollowers.map((follower, index) => {
+    const x = startX + index * (avatarSize + spacing);
+    const y = startY - 10;
+    return `
+      <g>
+        <image 
+          x="${x}" 
+          y="${y}" 
+          width="${avatarSize}" 
+          height="${avatarSize}"
+          xlink:href="${follower.avatar_url}"
+          clip-path="url(#clip-${index})"
+        />
+        <defs>
+          <clipPath id="clip-${index}">
+            <circle cx="${x + avatarSize / 2}" cy="${y + avatarSize / 2}" r="${avatarSize / 2}" />
+          </clipPath>
+        </defs>
+        <text 
+          x="${x + avatarSize / 2}" 
+          y="${y + avatarSize + 15}" 
+          fill="#ffffff" 
+          font-size="12" 
+          font-family="Arial, sans-serif"
+          text-anchor="middle"
+          font-weight="bold"
+          stroke="#000"
+          stroke-width="1"
+          paint-order="stroke"
+        >
+          ${follower.login.length > 6 ? follower.login.substring(0, 6) + ".." : follower.login}
+        </text>
+      </g>
+    `;
+  }).join("");
   return `
-    <svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="#282c34" />
-      <text x="100" y="55" fill="#ffffff" font-size="24" font-family="Arial, sans-serif">
-        Hello, ${username}!
+    <svg width="700" height="160" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <rect width="100%" height="100%" fill="#1e2127" rx="10" ry="10"/>
+      ${followerItems}
+      <text 
+        x="680" 
+        y="140" 
+        fill="#888888" 
+        font-size="12" 
+        font-family="Arial, sans-serif"
+        text-anchor="end"
+      >
+        Total Followers: ${followerList.length}
       </text>
-      <image 
-        href="https://avatars.githubusercontent.com/u/179314473?v=4"
-        x="20" y="20" width="60" height="60"
-      />
     </svg>
   `.trim();
 }
 __name(generateSvg, "generateSvg");
 
-// src/utils/getToken.ts
-function getToken() {
-  if (typeof GITHUB_PAT !== "undefined") {
-    return GITHUB_PAT;
-  }
-  return "";
-}
-__name(getToken, "getToken");
-
 // src/handlers/cardHandler.ts
-function cardHandler(url) {
-  const username = url.searchParams.get("username") || "Guest";
-  const token = getToken();
-  console.log("Token:", token);
-  const svg = generateSvg(username);
+async function cardHandler(url, env) {
+  const username = url.searchParams.get("username") || "cjjjjjk";
+  const followerList = await getGitHUbFlower(username, env);
+  const svg = generateSvg(username, followerList.followerList);
   return new Response(svg, {
     headers: {
       "Content-Type": "image/svg+xml",
@@ -70,10 +143,10 @@ __name(cardHandler, "cardHandler");
 
 // src/index.ts
 var src_default = {
-  async fetch(request) {
+  async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === "/card") {
-      return cardHandler(url);
+    if (url.pathname === "/user") {
+      return cardHandler(url, env);
     }
     return new Response("404 Not Found", { status: 404 });
   }
@@ -120,7 +193,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-no6TwW/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-DBUc6b/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -152,7 +225,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-no6TwW/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-DBUc6b/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
