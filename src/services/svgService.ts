@@ -78,16 +78,7 @@ export function generateSvg(
       </defs>
       <rect width="100%" height="100%" fill="#1b1e24" rx="12" ry="12"/>
       ${followerItems}
-      <text 
-        x="${svgWidth - 10}" 
-        y="${svgHeight - 10}" 
-        fill="#aaa" 
-        font-size="12" 
-        font-family="Arial, sans-serif"
-        text-anchor="end"
-      >
-        Total Followers: ${followerList.length}
-      </text>
+
     </svg>
   `.trim();
 }
