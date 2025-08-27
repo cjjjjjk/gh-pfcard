@@ -5,5 +5,3 @@ compatibility_date = "2025-07-19"
 [build]
 command = "npm run build"
 
-[vars]
-GITHUB_PAT = "env:GITHUB_PAT"
