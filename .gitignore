@@ -1,6 +1,5 @@
 node_modules
 dist
 
-#.env woker deploy cloudflare
-# wrangler.toml
 .dev.vars
+.wrangler

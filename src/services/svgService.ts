@@ -15,7 +15,7 @@ export function generateSvg(
   const maxRectWidth = maxNameLength * charWidth + 30;
 
   const svgHeight = paddingY * 2 + followerList.length * (rectHeight + spacing) - 10;
-  const minWidth = 650;
+  const minWidth = 746.66;
   const calculatedWidth = maxRectWidth + paddingX * 2;
   const svgWidth = Math.max(calculatedWidth, minWidth);
 
@@ -41,6 +41,7 @@ export function generateSvg(
   };
 
   const followerItems = followerList
+    .sort(() => Math.random() - 0.5)
     .map((follower, index) => {
       const x = startX;
       const y = startY + index * (rectHeight + spacing);
@@ -95,22 +96,18 @@ export function generateSvg(
       </filter>
     </defs>
 
-    <!-- nền chính -->
     <rect width="100%" height="100%" fill="url(#backgroundGradient)" rx="18" ry="18" stroke="#ffffff22" stroke-width="1.5"/>
 
-    <!-- hình tròn mờ -->
     <circle cx="${svgWidth * 0.2}" cy="${svgHeight * 0.8}" r="${Math.min(svgWidth, svgHeight) * 0.25
     }" fill="#ff6fd822" filter="url(#glow)"/>
     <circle cx="${svgWidth * 0.85}" cy="${svgHeight * 0.25}" r="${Math.min(svgWidth, svgHeight) * 0.35
     }" fill="#42e69522" filter="url(#glow)"/>
 
-    <!-- wave pattern -->
     <path d="M0 ${svgHeight * 0.9} Q ${svgWidth * 0.25} ${svgHeight * 0.8
     }, ${svgWidth * 0.5} ${svgHeight * 0.9} T ${svgWidth} ${svgHeight * 0.9
     } V ${svgHeight} H0 Z"
       fill="#ffffff05"/>
 
-    <!-- polygon -->
     <polygon points="${svgWidth * 0.9},40 ${svgWidth - 40},100 ${svgWidth - 80
     },40" fill="#ffffff10"/>
   `;
