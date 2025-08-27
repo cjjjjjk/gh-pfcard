@@ -31,13 +31,13 @@ export function generateSvg(
   ];
 
   const generateRandomGradient = (index: number) => {
-    const colors = colorPalettes[index % colorPalettes.length];
+    const colors = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
     return `
-      <linearGradient id="grad-${index}" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="${colors[0]}" />
-        <stop offset="100%" stop-color="${colors[1]}" />
-      </linearGradient>
-    `;
+    <linearGradient id="grad-${index}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${colors[0]}" />
+      <stop offset="100%" stop-color="${colors[1]}" />
+    </linearGradient>
+  `;
   };
 
   const followerItems = followerList
