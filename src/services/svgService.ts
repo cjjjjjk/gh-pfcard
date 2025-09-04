@@ -1,6 +1,7 @@
 export function generateSvg(
   username: string,
-  followerList: { login: string; avatar_url: string }[]
+  followerList: { login: string; avatar_url: string }[],
+  pLanguages?: string[],
 ): string {
   const rectHeight = 22;
   const spacing = 12;
@@ -30,6 +31,103 @@ export function generateSvg(
     ["#17EAD9", "#6078EA"]
   ];
 
+  const languageColors: Record<string, string> = {
+    ts: "#3178c6",
+    js: "#f1e05a",
+    py: "#3572A5",
+    cpp: "#f34b7d",
+    java: "#b07219",
+    cs: "#178600",
+    go: "#00ADD8",
+    php: "#4F5D95",
+    rb: "#701516",
+    html: "#ED775A",
+    css: "#33A1E0"
+  };
+
+  // New language network visualization
+  const languageTags = (pLanguages ?? []).length > 0 ? (() => {
+    const centerX = svgWidth * 0.7; // 70% of width
+    const centerY = svgHeight * 0.5; // 50% of height
+    const radius = Math.min(svgWidth * 0.25, svgHeight * 0.4); // Radius for node placement
+    const nodes = pLanguages!.map((lang, idx) => {
+      const angle = (idx / pLanguages!.length) * 2 * Math.PI;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      return { lang, x, y };
+    });
+
+    // Generate connections (each node connects to 2-3 random other nodes)
+    const connections: { from: number; to: number }[] = [];
+    nodes.forEach((_, idx) => {
+      const numConnections = Math.floor(Math.random() * 2) + 2; // 2 or 3 connections
+      const possibleTargets = Array.from({ length: nodes.length }, (_, i) => i)
+        .filter(i => i !== idx);
+      const targets = possibleTargets
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numConnections);
+      targets.forEach(target => {
+        // Avoid duplicate connections
+        if (!connections.some(c => (c.from === idx && c.to === target) || (c.from === target && c.to === idx))) {
+          connections.push({ from: idx, to: target });
+        }
+      });
+    });
+
+    // Generate SVG elements for connections
+    const connectionLines = connections.map(({ from, to }) => {
+      const fromNode = nodes[from];
+      const toNode = nodes[to];
+      return `
+        <line 
+          x1="${fromNode.x}" 
+          y1="${fromNode.y}" 
+          x2="${toNode.x}" 
+          y2="${toNode.y}" 
+          stroke="#fff" 
+          stroke-width="1.5"
+          stroke-opacity="0.6"
+        />
+      `;
+    }).join("");
+
+    // Generate SVG elements for language nodes
+    const languageNodes = nodes.map(({ lang, x, y }) => {
+      const fill = languageColors[lang] ?? "#666";
+      const width = Math.max(20, lang.length * 12);
+      const height = 24;
+      const rectX = x - width / 2;
+      const rectY = y - height / 2;
+
+      return `
+    <g>
+      <rect
+        x="${rectX}"
+        y="${rectY}"
+        width="${width}"
+        height="${height}"
+        fill="${fill}"
+        filter="url(#glow)"
+      />
+      <text
+        x="${x}"
+        y="${y + 4}"
+        fill="#fff"
+        font-size="12"
+        font-family="Segoe UI, sans-serif"
+        font-weight="700"
+        text-anchor="middle"
+      >
+        ${lang}
+      </text>
+    </g>
+  `;
+    }).join("");
+
+
+    return connectionLines + languageNodes;
+  })() : "";
+
   const generateRandomGradient = (index: number) => {
     const colors = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
     return `
@@ -45,7 +143,7 @@ export function generateSvg(
     .map((follower, index) => {
       const x = startX;
       const y = startY + index * (rectHeight + spacing);
-      const rectWidth = follower.login.length * charWidth + 40;
+      const rectWidth = follower.login.length * charWidth + 20;
 
       return `
         <g>
@@ -115,6 +213,7 @@ export function generateSvg(
     <svg width="${svgWidth}" height="${svgHeight}" xmlns="http://www.w3.org/2000/svg">
       ${backgroundDecorations}
       ${followerItems}
+      ${languageTags}
     </svg>
   `.trim();
 }
