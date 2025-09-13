@@ -11,8 +11,13 @@ export async function cardHandler(url: URL, env: { GITHUB_PAT: string }): Promis
         languages = programingLanguageParam.split('-')
     }
 
+    const raw = url.searchParams.get('limit');
+    const value = parseInt(raw ?? "", 10);
+
+    const limitFollowerShow: number = !Number.isNaN(value) && value >= 0 && value <= 10 ? value : 10;
+
     const followerList = await getGitHUbFlower(username, env)
-    const svg = generateSvg(username, followerList.followerList, languages)
+    const svg = generateSvg(username, followerList.followerList, languages, limitFollowerShow)
 
     return new Response(svg, {
         headers: {

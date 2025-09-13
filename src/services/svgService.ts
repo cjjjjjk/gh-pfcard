@@ -2,6 +2,7 @@ export function generateSvg(
   username: string,
   followerList: { login: string; avatar_url: string }[],
   pLanguages?: string[],
+  limitFlowerShow: number = 10
 ): string {
   const rectHeight = 22;
   const spacing = 12;
@@ -12,10 +13,14 @@ export function generateSvg(
   const startY = paddingY;
 
   const charWidth = 8;
-  const maxNameLength = Math.max(...followerList.map(f => f.login.length), 4);
+
+  const showFollowers = followerList.slice(0, limitFlowerShow);
+
+  const maxNameLength = Math.max(...showFollowers.map(f => f.login.length), 4);
   const maxRectWidth = maxNameLength * charWidth + 30;
 
-  const svgHeight = paddingY * 2 + followerList.length * (rectHeight + spacing) - 10;
+  // count heigh, min is 2 flower even not show any
+  const svgHeight = Math.max(paddingY * 2 + showFollowers.length * (rectHeight + spacing) - 10, paddingY * 2 + 2 * (rectHeight + spacing) - 10);
   const minWidth = 746.66;
   const calculatedWidth = maxRectWidth + paddingX * 2;
   const svgWidth = Math.max(calculatedWidth, minWidth);
@@ -47,9 +52,9 @@ export function generateSvg(
 
   // New language network visualization
   const languageTags = (pLanguages ?? []).length > 0 ? (() => {
-    const centerX = svgWidth * 0.7; // 70% of width
-    const centerY = svgHeight * 0.5; // 50% of height
-    const radius = Math.min(svgWidth * 0.25, svgHeight * 0.4); // Radius for node placement
+    const centerX = svgWidth * 0.7;
+    const centerY = svgHeight * 0.5;
+    const radius = Math.min(svgWidth * 0.25, svgHeight * 0.4);
     const nodes = pLanguages!.map((lang, idx) => {
       const angle = (idx / pLanguages!.length) * 2 * Math.PI;
       const x = centerX + radius * Math.cos(angle);
@@ -60,7 +65,7 @@ export function generateSvg(
     // Generate connections (each node connects to 2-3 random other nodes)
     const connections: { from: number; to: number }[] = [];
     nodes.forEach((_, idx) => {
-      const numConnections = Math.floor(Math.random() * 2) + 2; // 2 or 3 connections
+      const numConnections = Math.floor(Math.random() * 2) + 1;
       const possibleTargets = Array.from({ length: nodes.length }, (_, i) => i)
         .filter(i => i !== idx);
       const targets = possibleTargets
@@ -138,7 +143,7 @@ export function generateSvg(
   `;
   };
 
-  const followerItems = followerList
+  const followerItems = showFollowers
     .sort(() => Math.random() - 0.5)
     .map((follower, index) => {
       const x = startX;
